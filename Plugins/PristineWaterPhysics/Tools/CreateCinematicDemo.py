@@ -55,6 +55,3 @@ for setting in [
 ]:
     unreal.SystemLibrary.execute_console_command(world,setting)
 unreal.log('Cinematic water demo ready: '+path)
-
-
-
