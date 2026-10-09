@@ -54,3 +54,7 @@ Only editor automation, local rendering and Development target compilation have 
 ## Updating from 0.4
 
 Back up project assets, replace the plugin source/content, rebuild and inspect water actors. Version 0.5 applies performance presets at Begin Play. Use Performance > Custom and Apply Performance Settings if you need to retain your selected surface resolution/rate or Source quality. Region grid resolution and particle counts are never automatically changed by presets. Existing terrain bakes must be regenerated when terrain or grid bounds change.
+
+## Updating from 0.5
+
+Install the new M_PristineCinematic asset together with the updated code. Region flow now transports momentum, so previously tuned impulses can behave differently. Re-test splash strength and bottom drag in your scenes. The bundled cinematic demo generator uses 128 cells per axis and re-bakes its copied terrain; Apply Cinematic Preset itself does not change your grid resolution or refill your water.

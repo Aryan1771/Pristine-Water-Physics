@@ -60,7 +60,9 @@ void UPristineWaterComponent::ApplyWaterSettings()
     if (!DynamicMaterial) return;
 
     SetScalar(TEXT("RefractiveIndex"), Optics.RefractiveIndex);
+    SetScalar(TEXT("ShoreFoam"), Optics.ShoreFoam);
     SetScalar(TEXT("Reflectivity"), Optics.Reflectivity);
+    SetScalar(TEXT("Roughness"), FMath::Clamp(Optics.Roughness,0.001f,1.f));
     SetScalar(TEXT("FresnelPower"), Optics.FresnelPower);
     SetScalar(TEXT("FresnelStrength"), Optics.FresnelStrength);
     SetScalar(TEXT("TotalInternalReflection"), Optics.TotalInternalReflection);
@@ -100,12 +102,14 @@ void UPristineWaterComponent::SetReflectivity(float Value)
 {
     Optics.Reflectivity = FMath::Clamp(Value, 0.0f, 1.0f);
     SetScalar(TEXT("Reflectivity"), Optics.Reflectivity);
+    SetScalar(TEXT("Roughness"), FMath::Clamp(Optics.Roughness,0.001f,1.f));
 }
 
 void UPristineWaterComponent::SetRefractiveIndex(float Value)
 {
     Optics.RefractiveIndex = FMath::Clamp(Value, 1.0f, 2.5f);
     SetScalar(TEXT("RefractiveIndex"), Optics.RefractiveIndex);
+    SetScalar(TEXT("ShoreFoam"), Optics.ShoreFoam);
 }
 
 void UPristineWaterComponent::SetTotalInternalReflection(float Value)
@@ -312,4 +316,21 @@ void UPristineWaterComponent::SetVector(FName Name, const FLinearColor& Value)
     {
         DynamicMaterial->SetVectorParameterValue(Name, Value);
     }
+}
+
+void UPristineWaterComponent::SetRoughness(float Value)
+{
+    if(!FMath::IsFinite(Value)) return;
+    Optics.Roughness=FMath::Clamp(Value,0.001f,1.f);
+    SetScalar(TEXT("Roughness"),Optics.Roughness);
+}
+void UPristineWaterComponent::ApplyCinematicLook(bool bCalm)
+{
+    Optics.RefractiveIndex=1.333f; Optics.Reflectivity=1; Optics.FresnelStrength=1; Optics.TotalInternalReflection=0;
+    Optics.Roughness=bCalm?0.008f:0.025f; Optics.ShoreFoam=bCalm?0.f:0.1f;
+    Optics.ShallowColor=FLinearColor(0.08f,0.18f,0.16f); Optics.DeepColor=FLinearColor(0.18f,0.65f,0.72f);
+    Volume.Absorption=0.6f; Volume.VolumeDepth=500; Volume.Clarity=0.995f; Volume.FoamAmount=bCalm?0.f:0.08f;
+    Motion.RippleStrength=bCalm?0.015f:0.09f;
+    ApplyWaterSettings();
+    SetScalar(TEXT("ShoreFoam"),bCalm?0.f:0.1f);
 }

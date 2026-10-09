@@ -72,3 +72,6 @@ Actors own independent simulation state. Assign Region references explicitly to 
 ## Material overrides
 
 Use materials compatible with the selected surface and Unreal renderer. Avoid adding shader displacement on top of CPU wave geometry. Region uses Single Layer Water; small liquid and droplets use translucent materials with approximate IOR 1.333. There is no spectral dispersion, exact underwater total internal reflection or physically resolved caustic transport.
+
+
+Version 0.6 adds ApplyCinematicPreset on Region and Source, and ApplyCinematicLook / SetRoughness on the Water component. See [Maximum quality](MAXIMUM_QUALITY.md). The new region solver stores cell-centered horizontal momentum; C++ users accessing old Grid.QX/QY arrays must migrate to Grid.MX/MY or Grid.Velocity.

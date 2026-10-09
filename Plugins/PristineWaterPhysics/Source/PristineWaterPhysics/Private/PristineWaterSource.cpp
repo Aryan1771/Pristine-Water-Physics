@@ -93,7 +93,7 @@ void APristineWaterSource::ApplyAppearance()
     Water->BindToMesh(Surface);
     if (UMaterialInstanceDynamic* MID = Water->DynamicMaterial)
     {
-        MID->SetScalarParameterValue(TEXT("Roughness"), FMath::Clamp(Roughness, 0.01f, 1.0f));
+        MID->SetScalarParameterValue(TEXT("Roughness"), FMath::Clamp(Roughness, 0.001f, 1.0f));
         MID->SetScalarParameterValue(TEXT("NormalTiling"), FMath::Max(10.0f, NormalTiling));
         MID->SetScalarParameterValue(TEXT("ShoreFoam"), FMath::Clamp(ShoreFoam, 0.0f, 1.0f));
         MID->SetScalarParameterValue(TEXT("ShoreWidth"), FMath::Max(1.0f, ShoreWidth));
@@ -241,3 +241,12 @@ void APristineWaterSource::PostEditChangeProperty(FPropertyChangedEvent& Event)
     Super::PostEditChangeProperty(Event);
 }
 #endif
+
+void APristineWaterSource::ApplyCinematicPreset()
+{
+    MaterialOverride=TSoftObjectPtr<UMaterialInterface>(FSoftObjectPath(TEXT("/PristineWaterPhysics/Materials/M_PristineCinematic.M_PristineCinematic")));
+    bRayTracingWaveGeometry=true; Quality=EPristineWaterQuality::High; Roughness=0.008f; ShoreFoam=0;
+    Water->ApplyCinematicLook(true);
+    Performance.Preset=EPristinePerformancePreset::Custom; Performance.MaxSurfaceHz=60; Performance.BudgetMs=8; Performance.bAdaptiveVisuals=false;
+    ApplyPerformanceSettings();
+}

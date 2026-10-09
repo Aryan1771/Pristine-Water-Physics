@@ -56,6 +56,8 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="Pristine Water")
     void BindToMesh(UMeshComponent* Mesh, int32 Slot = 0);
+    UFUNCTION(BlueprintCallable, Category="Pristine Water") void ApplyCinematicLook(bool bCalm = true);
+    UFUNCTION(BlueprintCallable, Category="Pristine Water") void SetRoughness(float Value);
 
     UFUNCTION(BlueprintCallable, Category="Pristine Water")
     void ApplyWaterSettings();

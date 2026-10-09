@@ -23,7 +23,7 @@ $testLog = Join-Path $runReport 'Automation.log'
 & $editor $projectPath -unattended -NullRHI -nosound '-ExecCmds=Automation RunTests PristineWater' '-TestExit=Automation Test Queue Empty' "-ReportExportPath=$runReport" "-abslog=$testLog"
 if ($LASTEXITCODE -ne 0) { throw "Unreal automation process failed: $LASTEXITCODE. Inspect $testLog" }
 $report = Get-Content (Join-Path $runReport 'index.json') -Raw | ConvertFrom-Json
-if ($report.failed -gt 0 -or $report.notRun -gt 0 -or $report.succeeded -lt 8) {
+if ($report.failed -gt 0 -or $report.notRun -gt 0 -or $report.succeeded -lt 12) {
     throw "Automation incomplete/failed: passed=$($report.succeeded), failed=$($report.failed), notRun=$($report.notRun). Inspect $runReport"
 }
 Write-Output "Passed $($report.succeeded) PristineWater tests. Report: $runReport"

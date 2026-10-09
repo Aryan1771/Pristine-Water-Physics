@@ -1,9 +1,9 @@
 {
   "FileVersion": 3,
-  "Version": 5,
-  "VersionName": "0.5.0",
+  "Version": 6,
+  "VersionName": "0.6.0",
   "FriendlyName": "Pristine Water Physics",
-  "Description": "Adaptive water performance controls, temperature-dependent fresh-water properties, ray-visible geometry, bounded shallow water and experimental small-volume SPH for UE 5.7.",
+  "Description": "Conservative shallow-water momentum transport, cinematic dielectric water, ray-visible geometry and experimental small-volume SPH for UE 5.7.",
   "Category": "Rendering",
   "CreatedBy": "OpenAI ChatGPT",
   "CanContainContent": true,

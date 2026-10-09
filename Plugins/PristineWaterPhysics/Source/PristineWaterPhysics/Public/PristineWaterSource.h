@@ -44,7 +44,7 @@ public:
     // Half width and half length in centimeters. Use these instead of actor scale.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Water|Source", meta=(ClampMin="10", ClampMax="2000000", Units="cm")) FVector2D HalfExtent = FVector2D(10000, 10000);
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Water|Source", meta=(ClampMin="1", ClampMax="100000", Units="cm")) float GameplayDepth = 1000;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Water|Appearance", meta=(ClampMin="0.01", ClampMax="1")) float Roughness = 0.075f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Water|Appearance", meta=(ClampMin="0.001", ClampMax="1")) float Roughness = 0.075f;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Water|Appearance", meta=(ClampMin="10", ClampMax="10000", Units="cm")) float NormalTiling = 500;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Water|Appearance", meta=(ClampMin="0", ClampMax="1")) float ShoreFoam = 0.3f;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Water|Appearance", meta=(ClampMin="1", ClampMax="2000", Units="cm")) float ShoreWidth = 100;
@@ -71,6 +71,7 @@ public:
     UFUNCTION(BlueprintCallable, Category="Water") void AddRipple(FVector WorldPosition, float Strength = 1.0f);
     UFUNCTION(BlueprintPure, Category="Water") FPristineWaterSample SampleWater(FVector WorldPosition) const;
     UFUNCTION(BlueprintPure, Category="Water") FVector GetSphereBuoyancyForce(FVector Center, float RadiusCm) const;
+    UFUNCTION(BlueprintCallable, CallInEditor, Category="Water|Cinematic") void ApplyCinematicPreset();
     virtual void OnConstruction(const FTransform& Transform) override;
     virtual void Tick(float DeltaSeconds) override;
 protected:

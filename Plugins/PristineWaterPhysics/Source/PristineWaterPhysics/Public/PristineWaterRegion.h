@@ -66,6 +66,7 @@ public:
     UFUNCTION(BlueprintCallable,Category="Water|Splashes") void AddSplash(FVector WorldPosition,FVector VelocityCmPerSecond,float RadiusCm=100,float Strength=1);
     UFUNCTION(BlueprintPure,Category="Water|Simulation") double GetWaterVolumeM3() const;
     UFUNCTION(BlueprintPure,Category="Water|Simulation") FPristineRegionSample SampleRegion(FVector WorldPosition) const;
+    UFUNCTION(BlueprintCallable, CallInEditor, Category="Water|Cinematic") void ApplyCinematicPreset();
     virtual void OnConstruction(const FTransform& Transform) override;
     virtual void Tick(float DeltaSeconds) override;
 protected:

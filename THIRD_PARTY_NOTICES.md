@@ -17,3 +17,7 @@ The reference organizations do not endorse or validate this plugin. Their docume
 ## Original content
 
 The water materials, procedural texture generation and demo authoring code were developed for this plugin. No marketplace content or Unreal Engine source distribution is included. Generated binary Unreal packages are included with their authoring code in the editor module and Tools directory.
+
+## Conservative shallow-water scheme
+
+The region solver implements first-order HLL fluxes with hydrostatic reconstruction and per-face shared draining limits. Method reference: Audusse, Bouchut, Bristeau, Klein and Perthame (2004), A Fast and Stable Well-Balanced Scheme with Hydrostatic Reconstruction for Shallow Water Flows, https://doi.org/10.1137/S1064827503431090. The implementation is original; the cited work is not bundled or relicensed.

@@ -120,8 +120,8 @@ void APristineWaterRegion::ApplyWaterTemperature()
     const auto P=UPristineWaterProperties::FreshWaterAtTemperature(TemperatureC);
     const double Ratio=FMath::Max(1.0,double(Water->Volume.Density)*1000)/P.DensityKgM3;
     for(double& Depth:Grid.Depth) Depth*=Ratio;
-    for(double& Q:Grid.QX) Q*=Ratio;
-    for(double& Q:Grid.QY) Q*=Ratio;
+    for(double& Q:Grid.MX) Q*=Ratio;
+    for(double& Q:Grid.MY) Q*=Ratio;
     for(FDrop& Drop:Drops) Drop.Volume*=Ratio;
     Water->Volume.Density=P.DensityKgM3/1000; Water->ApplyWaterSettings(); TemperatureC=P.TemperatureC;
     // Uniform thermal expansion preserves rho*volume, with no heat-transfer simulation.
@@ -140,8 +140,8 @@ FPristineRegionSample APristineWaterRegion::SampleRegion(FVector P) const
     if(I==INDEX_NONE||Grid.Depth[I]<1.e-5) return S;
     S.bWet=L.Z>=Grid.Bed[I]*100; S.SurfaceZ=GetActorLocation().Z+(Grid.Bed[I]+Grid.Depth[I])*100; S.DepthCm=S.SurfaceZ-P.Z;
     S.HydrostaticPressurePa=S.bWet?FMath::Max(0.f,S.DepthCm)*0.01f*FMath::Max(0.f,Water->Volume.Density)*1000*9.81f:0;
-    const int32 X=I%Grid.N,Y=I/Grid.N;
-    S.Velocity=GetActorTransform().TransformVectorNoScale(FVector((Grid.QX[Y*(Grid.N+1)+X]+Grid.QX[Y*(Grid.N+1)+X+1])/(2*Grid.Depth[I])*100,(Grid.QY[Y*Grid.N+X]+Grid.QY[(Y+1)*Grid.N+X])/(2*Grid.Depth[I])*100,0));
+    const FVector2D Flow=Grid.Velocity(I);
+    S.Velocity=GetActorTransform().TransformVectorNoScale(FVector(Flow.X*100,Flow.Y*100,0));
     return S;
 }
 double APristineWaterRegion::GetWaterVolumeM3() const {double V=Grid.Volume(); for(const FDrop& D:Drops) V+=D.Volume; return V;}
@@ -179,7 +179,7 @@ void APristineWaterRegion::AddSplash(FVector P,FVector Velocity,float Radius,flo
     {
         const double Volume=FMath::Min(0.000008,Grid.Depth[Home]*Grid.DX*Grid.DY*0.002);
         if(Volume<1.e-10) break;
-        Grid.Depth[Home]-=Volume/(Grid.DX*Grid.DY);
+        Grid.RemoveVolume(Home,Volume);
         FDrop D; D.P=FVector(L.X,L.Y,(Grid.Bed[Home]+Grid.Depth[Home])*100+3);
         D.V=V*0.25+FVector(Random.FRandRange(-120,120),Random.FRandRange(-120,120),FMath::Abs(V.Z)*0.3+Random.FRandRange(100,250))*Strength;
         D.Volume=Volume; D.Age=0; D.Home=Home; Drops.Add(D);
@@ -196,8 +196,7 @@ void APristineWaterRegion::UpdateDrops(float Dt)
         if(Return||D.Age>5)
         {
             const int32 Target=C==INDEX_NONE?D.Home:C;
-            Grid.Depth[Target]+=D.Volume/(Grid.DX*Grid.DY);
-            Grid.Impulse(Target%Grid.N,Target/Grid.N,FVector2D(D.V.X,D.V.Y)*0.01);
+            Grid.AddVolume(Target,D.Volume,FVector2D(D.V.X,D.V.Y)*0.01);
             Drops.RemoveAtSwap(I);
         }
     }
@@ -232,7 +231,7 @@ void APristineWaterRegion::UpdateMesh()
     {
         const int32 I=Y*R+X; if(!Grid.Active[I]||Grid.Depth[I]<=1.e-5) continue;
         const int32 A=Y*(R+1)+X,B=A+1,C=A+R+1,D=C+1; T.Append({A,C,B,B,C,D});
-        const double Speed=(FMath::Abs(Grid.QX[Y*(R+1)+X])+FMath::Abs(Grid.QY[Y*R+X]))/FMath::Max(0.01,Grid.Depth[I]);
+        const double Speed=Grid.Velocity(I).Size();
         const float Foam=FMath::Clamp((Speed-0.4)*0.2,0.0,1.0);
         for(int32 J:{A,B,C,D}) Colors[J].R=FMath::Max(Colors[J].R,Foam);
     }
@@ -255,4 +254,15 @@ void APristineWaterRegion::UpdateMesh()
     if(Existing&&Existing->ProcVertexBuffer.Num()==V.Num()&&LastTriangles==T)
         Surface->UpdateMeshSection_LinearColor(0,V,N,UV,Colors,Tangents);
     else {Surface->CreateMeshSection_LinearColor(0,V,T,N,UV,Colors,Tangents,false); LastTriangles=MoveTemp(T);}
+}
+
+
+
+void APristineWaterRegion::ApplyCinematicPreset()
+{
+    SurfaceMaterial=TSoftObjectPtr<UMaterialInterface>(FSoftObjectPath(TEXT("/PristineWaterPhysics/Materials/M_PristineCinematic.M_PristineCinematic")));
+    if(auto* Material=SurfaceMaterial.LoadSynchronous()) Surface->SetMaterial(0,Material);
+    Water->bAssignLiquidMaterialOnApply=false; Water->BindToMesh(Surface); Water->ApplyCinematicLook(true);
+    Performance.Preset=EPristinePerformancePreset::Custom; Performance.MaxSurfaceHz=60; Performance.BudgetMs=8; Performance.bAdaptiveVisuals=false;
+    ApplyPerformanceSettings();
 }

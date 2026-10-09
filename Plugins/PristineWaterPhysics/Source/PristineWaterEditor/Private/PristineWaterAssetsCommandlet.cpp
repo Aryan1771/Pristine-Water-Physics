@@ -125,7 +125,7 @@ UMaterial* Material(const FString& Name,int32 Quality,UTexture2D* Normal,UTextur
     UMaterial* M=NewObject<UMaterial>(CreatePackage(*Path),*Name,RF_Public|RF_Standalone);
     M->SetShadingModel(Quality==0 ? MSM_DefaultLit : MSM_SingleLayerWater);
     M->BlendMode=BLEND_Opaque;
-    M->bTangentSpaceNormal=Quality==3;
+    M->bTangentSpaceNormal=Quality>=3;
     FGraph G{M};
     G.Scalar(TEXT("RefractiveIndex"),1.333f); G.Scalar(TEXT("Reflectivity"),0.65f);
     G.Scalar(TEXT("FresnelPower"),5); G.Scalar(TEXT("FresnelStrength"),1);
@@ -134,7 +134,7 @@ UMaterial* Material(const FString& Name,int32 Quality,UTexture2D* Normal,UTextur
     G.Scalar(TEXT("FoamAmount"),0.15f); G.Scalar(TEXT("WaveAmplitude"),8); G.Scalar(TEXT("WaveFrequency"),1.2f);
     G.Scalar(TEXT("WaveSpeed"),0.7f); G.Scalar(TEXT("RippleStrength"),0.25f);
     G.Scalar(TEXT("FlowDirectionX"),1); G.Scalar(TEXT("FlowDirectionY"),0);
-    G.Scalar(TEXT("Roughness"),0.075f); G.Scalar(TEXT("NormalTiling"),500);
+    G.Scalar(TEXT("Roughness"),Quality==4?0.008f:0.075f); G.Scalar(TEXT("NormalTiling"),500);
     G.Scalar(TEXT("ShoreFoam"),0.3f); G.Scalar(TEXT("ShoreWidth"),100);
     G.Vector(TEXT("ShallowColor"),FLinearColor(0.12f,0.55f,0.75f));
     G.Vector(TEXT("DeepColor"),FLinearColor(0.01f,0.06f,0.12f));
@@ -145,7 +145,7 @@ UMaterial* Material(const FString& Name,int32 Quality,UTexture2D* Normal,UTextur
     G.Inputs.Add(TEXT("View"),G.Node<UMaterialExpressionCameraVectorWS>());
     const FString WaveCode=TEXT("float2 d=float2(FlowDirectionX,FlowDirectionY); d=dot(d,d)>0.0001?normalize(d):float2(1,0); float2 e=float2(d.x*0.6-d.y*0.8,d.x*0.8+d.y*0.6); float k=max(0,WaveFrequency)*0.0062831853; float a=dot(P.xy,d)*k-T*WaveSpeed; float b=dot(P.xy,e)*k*1.73-T*WaveSpeed*1.31; ");
     auto* WPO=G.Custom(TEXT("Displacement"),WaveCode+TEXT("return float3(0,0,WaveAmplitude*(sin(a)*0.65+sin(b)*0.35));"),CMOT_Float3,{TEXT("P"),TEXT("T"),TEXT("WaveAmplitude"),TEXT("WaveFrequency"),TEXT("WaveSpeed"),TEXT("FlowDirectionX"),TEXT("FlowDirectionY")});
-    if(Quality!=3) M->GetEditorOnlyData()->WorldPositionOffset.Connect(0,WPO);
+    if(Quality<3) M->GetEditorOnlyData()->WorldPositionOffset.Connect(0,WPO);
     G.Custom(TEXT("MacroNormal"),WaveCode+TEXT("float2 g=WaveAmplitude*k*(d*cos(a)*0.65+e*cos(b)*0.6055); return normalize(float3(-g,1));"),CMOT_Float3,{TEXT("P"),TEXT("T"),TEXT("WaveAmplitude"),TEXT("WaveFrequency"),TEXT("WaveSpeed"),TEXT("FlowDirectionX"),TEXT("FlowDirectionY")});
     auto* UV=G.Custom(TEXT("WaterUV"),TEXT("return P.xy/max(10,NormalTiling)+float2(FlowDirectionX,FlowDirectionY)*T*WaveSpeed*0.025;"),CMOT_Float2,{TEXT("P"),TEXT("T"),TEXT("NormalTiling"),TEXT("FlowDirectionX"),TEXT("FlowDirectionY"),TEXT("WaveSpeed")});
     auto* N1=G.Node<UMaterialExpressionTextureSampleParameter2D>();
@@ -158,7 +158,7 @@ UMaterial* Material(const FString& Name,int32 Quality,UTexture2D* Normal,UTextur
     FString NormalCode=Quality==0 ? TEXT("float2 g=N1.xy;") : TEXT("float2 g=N1.xy+N2.xy*0.55;");
     if (Quality==2) NormalCode+=TEXT("float4 r[4]={Interaction0,Interaction1,Interaction2,Interaction3}; for(int i=0;i<4;i++){float age=T-r[i].z; float2 v=P.xy-r[i].xy; float dist=length(v); float ring=dist-age*120; float strength=r[i].w*step(0,age)*saturate(1-age/4)*exp(-ring*ring/1800); g+=v/max(dist,1)*cos(ring*0.12)*strength;} ");
     NormalCode+=TEXT("return normalize(float3(MacroNormal.xy+g*RippleStrength*(0.5+RefractionStrength),max(0.1,MacroNormal.z))); ");
-    if(Quality==3) NormalCode=TEXT("return normalize(float3((N1.xy+N2.xy*0.55)*RippleStrength,1));");
+    if(Quality>=3) NormalCode=TEXT("return normalize(float3((N1.xy+N2.xy*0.55)*RippleStrength,1));");
     auto* FinalNormal=G.Custom(TEXT("SurfaceNormal"),NormalCode,CMOT_Float3,{TEXT("N1"),TEXT("N2"),TEXT("MacroNormal"),TEXT("RippleStrength"),TEXT("RefractionStrength"),TEXT("Interaction0"),TEXT("Interaction1"),TEXT("Interaction2"),TEXT("Interaction3"),TEXT("P"),TEXT("T")});
     M->GetEditorOnlyData()->Normal.Connect(0,FinalNormal);
     if (Quality>0)
@@ -173,17 +173,17 @@ UMaterial* Material(const FString& Name,int32 Quality,UTexture2D* Normal,UTextur
         G.Scalar(TEXT("DepthBlend"),0.8f);
         G.Custom(TEXT("Foam"),TEXT("return saturate(FoamAmount*0.18*smoothstep(0.2,0.8,Mask.r));"),CMOT_Float1,{TEXT("FoamAmount"),TEXT("Mask")});
     }
-    if(Quality==3)
+    if(Quality>=3)
     {
         G.Inputs.Add(TEXT("FlowFoam"),G.Node<UMaterialExpressionVertexColor>());
-        G.Custom(TEXT("CombinedFoam"),TEXT("return saturate(Foam+FlowFoam.r);"),CMOT_Float1,{TEXT("Foam"),TEXT("FlowFoam")});
+        G.Custom(TEXT("CombinedFoam"),Quality==4?TEXT("return saturate(Foam+FlowFoam.r*FoamAmount);"):TEXT("return saturate(Foam+FlowFoam.r);"),CMOT_Float1,{TEXT("Foam"),TEXT("FlowFoam"),TEXT("FoamAmount")});
         G.Inputs[TEXT("Foam")]=G.Inputs[TEXT("CombinedFoam")];
     }
-    auto* Color=G.Custom(TEXT("SurfaceColor"),TEXT("return lerp(lerp(ShallowColor.rgb,DeepColor.rgb,DepthBlend)*0.35,float3(0.8,0.85,0.82),Foam);"),CMOT_Float3,{TEXT("ShallowColor"),TEXT("DeepColor"),TEXT("DepthBlend"),TEXT("Foam")});
+    auto* Color=G.Custom(TEXT("SurfaceColor"),Quality==4?TEXT("return float3(0.8,0.85,0.82)*Foam;"):TEXT("return lerp(lerp(ShallowColor.rgb,DeepColor.rgb,DepthBlend)*0.35,float3(0.8,0.85,0.82),Foam);"),CMOT_Float3,{TEXT("ShallowColor"),TEXT("DeepColor"),TEXT("DepthBlend"),TEXT("Foam")});
     M->GetEditorOnlyData()->BaseColor.Connect(0,Color);
-    auto* Rough=G.Custom(TEXT("SurfaceRoughness"),TEXT("return lerp(clamp(Roughness,0.01,1),0.55,Foam);"),CMOT_Float1,{TEXT("Roughness"),TEXT("Foam")});
+    auto* Rough=G.Custom(TEXT("SurfaceRoughness"),TEXT("return lerp(clamp(Roughness,0.001,1),0.55,Foam);"),CMOT_Float1,{TEXT("Roughness"),TEXT("Foam")});
     M->GetEditorOnlyData()->Roughness.Connect(0,Rough);
-    auto* Spec=G.Custom(TEXT("SurfaceSpecular"),TEXT("float i=max(1,RefractiveIndex); float f=(i-1)/(i+1); float edge=pow(1-saturate(dot(SurfaceNormal,View)),max(0.1,FresnelPower)); return saturate(f*f/0.08*Reflectivity*(FresnelStrength+edge*TotalInternalReflection));"),CMOT_Float1,{TEXT("RefractiveIndex"),TEXT("Reflectivity"),TEXT("FresnelPower"),TEXT("FresnelStrength"),TEXT("TotalInternalReflection"),TEXT("SurfaceNormal"),TEXT("View")});
+    auto* Spec=G.Custom(TEXT("SurfaceSpecular"),Quality==4?TEXT("float f=(RefractiveIndex-1)/(RefractiveIndex+1); return saturate(f*f/0.08*Reflectivity);"):TEXT("float i=max(1,RefractiveIndex); float f=(i-1)/(i+1); float edge=pow(1-saturate(dot(SurfaceNormal,View)),max(0.1,FresnelPower)); return saturate(f*f/0.08*Reflectivity*(FresnelStrength+edge*TotalInternalReflection));"),CMOT_Float1,{TEXT("RefractiveIndex"),TEXT("Reflectivity"),TEXT("FresnelPower"),TEXT("FresnelStrength"),TEXT("TotalInternalReflection"),TEXT("SurfaceNormal"),TEXT("View")});
     M->GetEditorOnlyData()->Specular.Connect(0,Spec);
     if (Quality>0)
     {
@@ -233,10 +233,11 @@ bool UPristineWaterAssetsCommandlet::BuildAssets()
     UMaterial* Masters[4];
     for (int32 Q=0;Q<3;++Q) Masters[Q]=Material(Names[Q],Q,Normal,Foam);
     Masters[3]=Material(TEXT("M_PristineFluid"),3,Normal,Foam);
+    UMaterial* Cinematic=Material(TEXT("M_PristineCinematic"),4,Normal,Foam);
     UMaterial* Volume=VolumeMaterial(TEXT("M_PristineVolume"));
     UMaterial* Droplet=VolumeMaterial(TEXT("M_PristineDroplet"));
     if (GShaderCompilingManager) GShaderCompilingManager->FinishAllCompilation();
-    for (UMaterial* M:{Masters[0],Masters[1],Masters[2],Masters[3],Volume,Droplet})
+    for (UMaterial* M:{Masters[0],Masters[1],Masters[2],Masters[3],Cinematic,Volume,Droplet})
     {
         if (FMaterialResource* Resource=M->GetMaterialResource(GMaxRHIShaderPlatform))
         {

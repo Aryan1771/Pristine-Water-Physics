@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.0
+
+- Replaced local-inertial region flow with conservative HLL momentum transport and hydrostatic terrain reconstruction.
+- Corrected droplet return momentum to be weighted by incoming liquid volume.
+- Added an analytical dam-break refinement test, momentum transport test and volume/momentum exchange test.
+- Added M_PristineCinematic and Apply Cinematic Preset with low-roughness dielectric reflections and restrained calm-water appearance.
+- Added roughness controls, persistent shore-foam controls, maximum-quality renderer guidance and a reproducible reflection-demo script.
+- Twelve passing regressions and Development Editor/Game builds; refreshed ray-traced visual checks.
+
 ## 0.5.0
 
 - Auto/Low/Balanced/High/Custom performance presets across water actors.

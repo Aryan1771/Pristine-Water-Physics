@@ -1,4 +1,4 @@
-# Pristine Water Physics 0.5 (UE 5.7)
+# Pristine Water Physics 0.6 (UE 5.7)
 
 Source plugin with bundled original Unreal materials, ray-tracing-visible wave geometry, bounded shallow-water simulation, splash droplets, buoyancy interactions and an experimental small-volume SPH solver. This is a real-time approximation, not a validated engineering CFD package or a simulation of every property of water.
 
@@ -101,4 +101,9 @@ See VALIDATION.md for checks actually performed. Run Session Frontend > Automati
 
 Retain the material soft references and include your water-containing maps in the cook. For runtime-only spawning without referenced maps/assets, explicitly add `/PristineWaterPhysics/Materials` and `/PristineWaterPhysics/Textures` to Additional Asset Directories to Cook. Test a packaged build on each supported target; editor tests alone do not certify shipping builds.
 
-This release is experimental. It does not simulate full 3D large-scale Navier–Stokes flow, breaking waves, heat transport or phase changes, evaporation, bubbles, wetting/contact angles, or arbitrary-fluid rheology. Large water uses a local-inertial shallow-water approximation (no momentum advection); small water uses a bounded CPU SPH approximation. Use a dedicated GPU FLIP/Niagara solution for high-resolution pouring and production-scale volumetric splashes.
+This release is experimental. It does not simulate full 3D large-scale Navier–Stokes flow, breaking waves, heat transport or phase changes, evaporation, bubbles, wetting/contact angles, or arbitrary-fluid rheology. Large water uses a conservative shallow-water approximation with momentum transport; small water uses a bounded CPU SPH approximation. Use a dedicated GPU FLIP/Niagara solution for high-resolution pouring and production-scale volumetric splashes.
+
+
+## Cinematic reflections and solver upgrade (0.6)
+
+Apply Cinematic Preset on Region or Source for the new dielectric Single Layer Water material, low roughness, restrained micro-ripples and a 60 Hz custom visual profile. Configure hardware Lumen ray-hit lighting in the project for the maximum-quality path. The Region now uses HLL momentum transport with hydrostatic reconstruction; incoming splash momentum is volume-weighted. See the repository maximum-quality guide and validation report for measured checks and limits.

@@ -2,9 +2,9 @@
 
 **Water simulation and rendering tools for Unreal Engine 5.7.** Build terrain-bounded lakes and pools, interact with buoyant objects, experiment with small-volume liquid, and tune CPU cost with hardware presets and adaptive visual updates.
 
-![Terrain-bounded water and splash test](docs/images/water-splash.png)
+![Cinematic water with hardware ray-traced reflections](docs/images/water-mirror.png)
 
-**Version 0.5.0 · Experimental · Validated on Windows / UE 5.7.4**
+**Version 0.6.0 · Experimental · Validated on Windows / UE 5.7.4**
 
 Pristine is a foundation for game and animation workflows. It is not yet a production-certified fluid engine or a physically complete reproduction of water. The screenshots are actual Unreal test renders. See [validation and measured performance](Plugins/PristineWaterPhysics/VALIDATION.md) before choosing it for a project.
 
@@ -17,7 +17,7 @@ Pristine is a foundation for game and animation workflows. It is not yet a produ
 | Pristine Water Source | Distant seas, oceans, ponds and inexpensive background water | Analytic waves and geometric ripples; not a volume-conserving ocean solver. |
 | Pristine Water Interactor | Buoyancy, drag and entry splashes on physics objects | Sphere approximation; no exact hull displacement or fully coupled momentum exchange. |
 
-Included: editable polygon boundaries, landscape collision baking, water-level tools, ray-visible procedural geometry, original water materials and demo map, Blueprint APIs, temperature-dependent freshwater properties, performance presets and eight automated regression tests.
+Included: editable polygon boundaries, landscape collision baking, water-level tools, ray-visible procedural geometry, original water materials and demo map, Blueprint APIs, temperature-dependent freshwater properties, performance presets and twelve automated regression tests.
 
 ## Start here
 
@@ -48,7 +48,7 @@ The repository contains source and Unreal assets, not precompiled DLLs. It does 
 
 ## How it works
 
-Regions discretize a baked terrain bed into a two-dimensional grid. Water depth and face discharge evolve using a local-inertial shallow-water approximation, with closed polygon boundaries. Splash droplets temporarily carry volume out of the grid and return it on landing. This conserves modeled volume but does not resolve three-dimensional breaking waves.
+Regions discretize a baked terrain bed into a two-dimensional grid. Water depth and face discharge evolve using a conservative shallow-water approximation with momentum transport, with closed polygon boundaries. Splash droplets temporarily carry volume out of the grid and return it on landing. This conserves modeled volume but does not resolve three-dimensional breaking waves.
 
 Small Fluid uses particle neighbors to evaluate density, pressure, viscosity and approximate cohesion. A compact scalar field and marching tetrahedra turn particles into a renderable liquid surface. Particle mass is conserved; the visual surface volume is approximate. Scene collision is one-way against static geometry.
 
@@ -70,3 +70,6 @@ Install this checkout's plugin in the test project first. The Unreal script buil
 ## License and attribution
 
 Original plugin code and original assets are licensed under [MIT](LICENSE), as authorized by the repository owner. Unreal Engine and referenced engine assets remain governed by Epic's terms and are not relicensed. Scientific property-data references are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+
+For the new cinematic preset and ray-traced mirror setup, follow [Maximum-quality water](docs/MAXIMUM_QUALITY.md).

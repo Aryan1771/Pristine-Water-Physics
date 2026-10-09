@@ -23,6 +23,10 @@ struct FPristineWaterOptics
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Optics", meta=(ClampMin="0.0", ClampMax="1.0", UIMin="0.0", UIMax="1.0"))
     float Reflectivity = 0.65f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Optics", meta=(ClampMin="0.001", ClampMax="1", UIMin="0.001", UIMax="0.2"))
+    float Roughness = 0.075f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Optics", meta=(ClampMin="0", ClampMax="1"))
+    float ShoreFoam = 0.3f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Optics", meta=(DisplayName="Fresnel Exponent", ClampMin="0.1", ClampMax="10.0"))
     float FresnelPower = 5.0f;

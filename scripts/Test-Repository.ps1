@@ -4,11 +4,11 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path $PSScriptRoot -Parent
 $plugin = Join-Path $repoRoot 'Plugins/PristineWaterPhysics'
 $descriptor = Get-Content (Join-Path $plugin 'PristineWaterPhysics.uplugin') -Raw | ConvertFrom-Json
-if ($descriptor.VersionName -ne '0.5.0') { throw 'Update the release checks for the new version.' }
+if ($descriptor.VersionName -ne '0.6.0') { throw 'Update the release checks for the new version.' }
 foreach ($name in @('PristineWaterPhysics','PristineWaterEditor')) {
     if ($descriptor.Modules.Name -notcontains $name) { throw "Missing module: $name" }
 }
-foreach ($relative in @('Content/Demo/L_PristineFluidLab.umap','Content/Materials/M_PristineFluid.uasset','Content/Materials/M_PristineVolume.uasset','Content/Materials/M_PristineDroplet.uasset')) {
+foreach ($relative in @('Content/Demo/L_PristineFluidLab.umap','Content/Materials/M_PristineFluid.uasset','Content/Materials/M_PristineCinematic.uasset','Content/Materials/M_PristineVolume.uasset','Content/Materials/M_PristineDroplet.uasset')) {
     if (!(Test-Path -LiteralPath (Join-Path $plugin $relative))) { throw "Missing asset: $relative" }
 }
 $broken = @()
