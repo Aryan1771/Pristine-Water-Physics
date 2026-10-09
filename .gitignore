@@ -1,0 +1,16 @@
+# Unreal-generated local files
+**/Binaries/
+**/Intermediate/
+**/Saved/
+**/DerivedDataCache/
+.vs/
+.idea/
+*.sln
+*.suo
+*.VC.db
+*.VC.opendb
+*.pdb
+*.log
+TestResults/
+__pycache__/
+*.pyc

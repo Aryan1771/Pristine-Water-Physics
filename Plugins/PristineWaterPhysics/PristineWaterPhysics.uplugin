@@ -1,0 +1,30 @@
+{
+  "FileVersion": 3,
+  "Version": 5,
+  "VersionName": "0.5.0",
+  "FriendlyName": "Pristine Water Physics",
+  "Description": "Adaptive water performance controls, temperature-dependent fresh-water properties, ray-visible geometry, bounded shallow water and experimental small-volume SPH for UE 5.7.",
+  "Category": "Rendering",
+  "CreatedBy": "OpenAI ChatGPT",
+  "CanContainContent": true,
+  "IsBetaVersion": true,
+  "Installed": false,
+  "Modules": [
+    {
+      "Name": "PristineWaterPhysics",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    },
+    {
+      "Name": "PristineWaterEditor",
+      "Type": "Editor",
+      "LoadingPhase": "Default"
+    }
+  ],
+  "Plugins": [
+    {
+      "Name": "ProceduralMeshComponent",
+      "Enabled": true
+    }
+  ]
+}
