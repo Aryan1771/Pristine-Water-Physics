@@ -36,6 +36,8 @@ The repository contains source and Unreal assets, not precompiled DLLs. It does 
 
 ## Documentation
 
+- [One-scene puddle, pool, pond and lake comparison](docs/NATURE_COMPARISON.md)
+- [Free Unreal models, samples and plugin starter kit](docs/FREE_ASSET_STARTER_KIT.md)
 - [Unreal installation, rendering and packaging](docs/SETUP.md)
 - [Step-by-step tutorials](docs/TUTORIALS.md)
 - [Controls, units and Blueprint integration](docs/MANUAL.md)

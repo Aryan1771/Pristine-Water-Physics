@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Added a reproducible single-map woodland comparison with puddle, pool, pond and lake regions, terrain collision, original vegetation, a trail, signs and five cameras.
+- Added editor mesh-authoring helpers and guides for water scale, settings, performance and useful free Unreal assets.
+- Corrected the test runner to count Unreal's successful-with-warnings results as completed successes while still surfacing warnings and rejecting failed/incomplete tests.
+
 ## 0.6.0
 
 - Replaced local-inertial region flow with conservative HLL momentum transport and hydrostatic terrain reconstruction.
