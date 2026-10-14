@@ -8,7 +8,7 @@ if ($descriptor.VersionName -ne '0.6.0') { throw 'Update the release checks for 
 foreach ($name in @('PristineWaterPhysics','PristineWaterEditor')) {
     if ($descriptor.Modules.Name -notcontains $name) { throw "Missing module: $name" }
 }
-foreach ($relative in @('Content/Demo/L_PristineFluidLab.umap','Content/Materials/M_PristineFluid.uasset','Content/Materials/M_PristineCinematic.uasset','Content/Materials/M_PristineVolume.uasset','Content/Materials/M_PristineDroplet.uasset')) {
+foreach ($relative in @('Content/Demo/L_PristineFluidLab.umap','Content/Materials/M_PristineFluid.uasset','Content/Materials/M_PristineCinematic.uasset','Content/Materials/M_PristineVolume.uasset','Content/Materials/M_PristineDroplet.uasset','Content/Materials/M_PristineUnderwater.uasset')) {
     if (!(Test-Path -LiteralPath (Join-Path $plugin $relative))) { throw "Missing asset: $relative" }
 }
 $broken = @()

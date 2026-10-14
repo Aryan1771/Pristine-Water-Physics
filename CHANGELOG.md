@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added an optional alpine lake extension inspired by a user-supplied reference, with original terrain, shore rocks, meadow vegetation, snow patches and a comparison camera.
+
+- Added a walking/wading/swimming test character, region-aware immersion, puddle/wake impulses, first/third-person camera and optional MetaHuman visual/animation slots.
+- Added two-sided water surfaces, renderer immersion reporting and a depth-based underwater attenuation material that fades back to an identity effect. Corrected the comparison scene to use optical reference distance independently of basin depth.
+- Added a character immersion/exit and nonblocking surface regression, plus a reusable scene upgrade script and controls guide.
+
 - Added a reproducible single-map woodland comparison with puddle, pool, pond and lake regions, terrain collision, original vegetation, a trail, signs and five cameras.
 - Added editor mesh-authoring helpers and guides for water scale, settings, performance and useful free Unreal assets.
 - Corrected the test runner to count Unreal's successful-with-warnings results as completed successes while still surfacing warnings and rejecting failed/incomplete tests.

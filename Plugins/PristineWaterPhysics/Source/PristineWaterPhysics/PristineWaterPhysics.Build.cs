@@ -11,6 +11,7 @@ public class PristineWaterPhysics : ModuleRules
             "Core",
             "CoreUObject",
             "Engine",
+            "InputCore",
             "ProceduralMeshComponent"
         });
 

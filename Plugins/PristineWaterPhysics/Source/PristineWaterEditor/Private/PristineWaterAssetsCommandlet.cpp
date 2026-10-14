@@ -22,6 +22,9 @@
 #include "PristineWaterRegion.h"
 #include "PristineSmallFluid.h"
 #include "Materials/MaterialExpressionVertexColor.h"
+#include "Materials/MaterialExpressionSceneTexture.h"
+#include "Materials/MaterialExpressionSceneDepth.h"
+#include "Materials/MaterialExpressionTwoSidedSign.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "Engine/Blueprint.h"
 #include "Engine/BlueprintGeneratedClass.h"
@@ -121,10 +124,13 @@ struct FGraph
 UMaterial* Material(const FString& Name,int32 Quality,UTexture2D* Normal,UTexture2D* Foam)
 {
     const FString Path=TEXT("/PristineWaterPhysics/Materials/")+Name;
-    if (UMaterial* Existing=LoadObject<UMaterial>(nullptr,*Path)) return Existing;
-    UMaterial* M=NewObject<UMaterial>(CreatePackage(*Path),*Name,RF_Public|RF_Standalone);
+    UMaterial* M=LoadObject<UMaterial>(nullptr,*Path);
+    const bool bNew=M==nullptr;
+    if (!M) M=NewObject<UMaterial>(CreatePackage(*Path),*Name,RF_Public|RF_Standalone);
+    else UMaterialEditingLibrary::DeleteAllMaterialExpressions(M);
     M->SetShadingModel(Quality==0 ? MSM_DefaultLit : MSM_SingleLayerWater);
     M->BlendMode=BLEND_Opaque;
+    M->TwoSided=true;
     M->bTangentSpaceNormal=Quality>=3;
     FGraph G{M};
     G.Scalar(TEXT("RefractiveIndex"),1.333f); G.Scalar(TEXT("Reflectivity"),0.65f);
@@ -188,14 +194,16 @@ UMaterial* Material(const FString& Name,int32 Quality,UTexture2D* Normal,UTextur
     if (Quality>0)
     {
         auto* SLW=G.Node<UMaterialExpressionSingleLayerWaterMaterialOutput>();
-        auto* Absorb=G.Custom(TEXT("AbsorptionCoefficient"),TEXT("return -log(clamp(DeepColor.rgb,0.001,0.99))*max(0,Absorption)/max(1,VolumeDepth);"),CMOT_Float3,{TEXT("DeepColor"),TEXT("Absorption"),TEXT("VolumeDepth")});
-        auto* Scatter=G.Custom(TEXT("ScatteringCoefficient"),TEXT("return max(0,ShallowColor.rgb)*(1-saturate(Clarity))*0.02;"),CMOT_Float3,{TEXT("ShallowColor"),TEXT("Clarity")});
+        // Underwater path attenuation is supplied by the camera effect; behind a back face is air.
+        G.Inputs.Add(TEXT("Facing"),G.Node<UMaterialExpressionTwoSidedSign>());
+        auto* Absorb=G.Custom(TEXT("AbsorptionCoefficient"),TEXT("return max(0,Facing)*-log(clamp(DeepColor.rgb,0.001,0.99))*max(0,Absorption)/max(1,VolumeDepth);"),CMOT_Float3,{TEXT("DeepColor"),TEXT("Absorption"),TEXT("VolumeDepth"),TEXT("Facing")});
+        auto* Scatter=G.Custom(TEXT("ScatteringCoefficient"),TEXT("return max(0,Facing)*max(0,ShallowColor.rgb)*(1-saturate(Clarity))*0.02;"),CMOT_Float3,{TEXT("ShallowColor"),TEXT("Clarity"),TEXT("Facing")});
         SLW->AbsorptionCoefficients.Connect(0,Absorb); SLW->ScatteringCoefficients.Connect(0,Scatter);
         auto* Opacity=G.Custom(TEXT("SurfaceOpacity"),TEXT("return lerp(0.02,1,Foam);"),CMOT_Float1,{TEXT("Foam")});
         M->GetEditorOnlyData()->Opacity.Connect(0,Opacity);
     }
     M->PostEditChange();
-    FAssetRegistryModule::AssetCreated(M);
+    if(bNew) FAssetRegistryModule::AssetCreated(M);
     return M;
 }
 UMaterial* VolumeMaterial(const FString& Name)
@@ -218,6 +226,26 @@ UMaterial* VolumeMaterial(const FString& Name)
     M->GetEditorOnlyData()->Refraction.Connect(0,G.Inputs[TEXT("RefractiveIndex")]);
     M->PostEditChange(); FAssetRegistryModule::AssetCreated(M); return M;
 }
+UMaterial* UnderwaterMaterial()
+{
+    const FString Path=TEXT("/PristineWaterPhysics/Materials/M_PristineUnderwater");
+    UMaterial* M=LoadObject<UMaterial>(nullptr,*Path);
+    const bool bNew=!M;
+    if(!M) M=NewObject<UMaterial>(CreatePackage(*Path),TEXT("M_PristineUnderwater"),RF_Public|RF_Standalone);
+    else UMaterialEditingLibrary::DeleteAllMaterialExpressions(M);
+    M->MaterialDomain=MD_PostProcess;
+    FGraph G{M};
+    auto* Scene=G.Node<UMaterialExpressionSceneTexture>();Scene->SceneTextureId=PPI_PostProcessInput0;
+    G.Inputs.Add(TEXT("Scene"),Scene);
+    G.Inputs.Add(TEXT("Distance"),G.Node<UMaterialExpressionSceneDepth>());
+    G.Inputs.Add(TEXT("View"),G.Node<UMaterialExpressionCameraVectorWS>());
+    G.Scalar(TEXT("Immersion"),0);G.Scalar(TEXT("EyeDepth"),100);G.Scalar(TEXT("OpticalDistance"),500);G.Scalar(TEXT("Absorption"),.6);
+    G.Vector(TEXT("Transmission"),FLinearColor(.18,.65,.72));
+    G.Vector(TEXT("ScatterColor"),FLinearColor(.08,.18,.16));G.Scalar(TEXT("Clarity"),.995);
+    auto* Color=G.Custom(TEXT("Underwater attenuation"),TEXT("float path=max(0,Distance); if(View.z<-.001) path=min(path,EyeDepth/max(.001,-View.z)); float3 sigma=-log(clamp(Transmission.rgb,.001,.999))*max(0,Absorption)/max(1,OpticalDistance)+max(0,ScatterColor.rgb)*(1-saturate(Clarity))*.02; float3 tr=exp(-sigma*path); return lerp(Scene.rgb,Scene.rgb*tr+max(0,ScatterColor.rgb)*.35*(1-tr),saturate(Immersion));"),CMOT_Float3,{TEXT("Scene"),TEXT("Distance"),TEXT("View"),TEXT("Immersion"),TEXT("EyeDepth"),TEXT("OpticalDistance"),TEXT("Absorption"),TEXT("Transmission"),TEXT("ScatterColor"),TEXT("Clarity")});
+    M->GetEditorOnlyData()->EmissiveColor.Connect(0,Color);
+    M->PostEditChange();if(bNew) FAssetRegistryModule::AssetCreated(M);return M;
+}
 }
 
 UPristineWaterAssetsCommandlet::UPristineWaterAssetsCommandlet() { IsClient=false; IsEditor=true; IsServer=false; LogToConsole=true; }
@@ -236,8 +264,9 @@ bool UPristineWaterAssetsCommandlet::BuildAssets()
     UMaterial* Cinematic=Material(TEXT("M_PristineCinematic"),4,Normal,Foam);
     UMaterial* Volume=VolumeMaterial(TEXT("M_PristineVolume"));
     UMaterial* Droplet=VolumeMaterial(TEXT("M_PristineDroplet"));
+    UMaterial* Underwater=UnderwaterMaterial();
     if (GShaderCompilingManager) GShaderCompilingManager->FinishAllCompilation();
-    for (UMaterial* M:{Masters[0],Masters[1],Masters[2],Masters[3],Cinematic,Volume,Droplet})
+    for (UMaterial* M:{Masters[0],Masters[1],Masters[2],Masters[3],Cinematic,Volume,Droplet,Underwater})
     {
         if (FMaterialResource* Resource=M->GetMaterialResource(GMaxRHIShaderPlatform))
         {

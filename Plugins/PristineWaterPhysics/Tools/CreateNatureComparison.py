@@ -68,10 +68,21 @@ def material(name, color, roughness=.85, foliage=False):
         for b in BODIES:
             code+='float2 d%s=(P.xy-float2(%s,%s))/float2(%s,%s);\n'%(b[7],b[1],b[2],b[3],b[4])
             code+='col=lerp(float3(.12,.095,.05)*(0.8+0.4*fine),col,smoothstep(.94,1.18,length(d%s)));\n'%b[7]
-    code+='return col;'
+    code+='return col*(.72+.35*n.value(P.xy/3.8)+.18*n.value(P.xy*1.4));'
     custom.set_editor_property('code',code)
     lib.connect_material_expressions(pos,'',custom,'P')
     lib.connect_material_property(custom,'',unreal.MaterialProperty.MP_BASE_COLOR)
+    if foliage:
+        m.set_editor_property('shading_model',unreal.MaterialShadingModel.MSM_TWO_SIDED_FOLIAGE)
+        lib.connect_material_property(custom,'',unreal.MaterialProperty.MP_SUBSURFACE_COLOR)
+    else:
+        normal=lib.create_material_expression(m,unreal.MaterialExpressionCustom)
+        normal_input=unreal.CustomInput();normal_input.set_editor_property('input_name','P')
+        normal.set_editor_property('inputs',[normal_input])
+        normal.set_editor_property('output_type',unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+        normal.set_editor_property('code',code.split('float macro=')[0]+'float2 p=P.xy/8; float h=n.value(p); float dx=(n.value(p+float2(.1,0))-h)*1.2; float dy=(n.value(p+float2(0,.1))-h)*1.2; float fade=saturate(1-length(fwidth(P.xy))*.025); return normalize(float3(-dx*fade,-dy*fade,1));')
+        lib.connect_material_expressions(pos,'',normal,'P')
+        lib.connect_material_property(normal,'',unreal.MaterialProperty.MP_NORMAL)
     r=lib.create_material_expression(m,unreal.MaterialExpressionConstant)
     r.set_editor_property('r',roughness)
     lib.connect_material_property(r,'',unreal.MaterialProperty.MP_ROUGHNESS)
@@ -152,7 +163,7 @@ def add_trail():
             a.set_actor_label(b[0]+' '+label);a.set_folder_path('Trail and signs')
             a.static_mesh_component.set_static_mesh(cube);a.static_mesh_component.set_material(0,bark)
             a.set_actor_scale3d(unreal.Vector(*scale))
-        a=actors.spawn_actor_from_class(unreal.TextRenderActor,unreal.Vector(x-170,y-9,z+150),unreal.Rotator(0,-90,0))
+        a=actors.spawn_actor_from_class(unreal.TextRenderActor,unreal.Vector(x-170,y-9,z+150),unreal.Rotator(pitch=0,yaw=-90,roll=0))
         a.set_actor_label(b[0]+' comparison label');a.set_folder_path('Trail and signs')
         text=a.get_component_by_class(unreal.TextRenderComponent)
         text.set_text(b[0]+'\nDepth: '+str(b[6])+' cm | Grid: '+str(b[7]))
@@ -198,8 +209,9 @@ def build():
         water=region.get_editor_property('water')
         water.set_roughness(.008 if b[7]<96 else .025)
         water.set_ripple_strength(.005 if b[7]<96 else .045)
-        water.set_clarity(.95);water.set_absorption(.8)
-        water.set_volume_depth(max(30,b[6]));region.reset_water()
+        water.set_clarity(.995);water.set_absorption(.6)
+        # Optical reference distance is a property of the water, not basin depth.
+        water.set_volume_depth(500);region.reset_water()
         if region.get_water_volume_m3()<=0: raise RuntimeError('Empty terrain bake for '+b[0])
         unreal.log('NATURE_VOLUME '+b[0]+' '+str(region.get_water_volume_m3()))
     # Original broadleaf woodland: clustered branches and individual leaf geometry.
@@ -249,10 +261,12 @@ def build():
             rock.static_mesh_component.set_static_mesh(sphere);rock.static_mesh_component.set_material(0,stone)
             rock.set_actor_scale3d(unreal.Vector(s*1.3,s,s*.6))
     actors.spawn_actor_from_class(unreal.SkyAtmosphere,unreal.Vector())
-    sun=actors.spawn_actor_from_class(unreal.DirectionalLight,unreal.Vector(0,0,4000),unreal.Rotator(-24,-42,0))
+    sun=actors.spawn_actor_from_class(unreal.DirectionalLight,unreal.Vector(0,0,4000),unreal.Rotator(pitch=-24,yaw=-42,roll=0))
+    sun.light_component.set_mobility(unreal.ComponentMobility.MOVABLE)
     sun.light_component.set_editor_property('intensity',5)
     sun.light_component.set_editor_property('atmosphere_sun_light',True)
     sky=actors.spawn_actor_from_class(unreal.SkyLight,unreal.Vector(0,0,3000))
+    sky.light_component.set_mobility(unreal.ComponentMobility.MOVABLE)
     sky.light_component.set_editor_property('real_time_capture',True)
     fog=actors.spawn_actor_from_class(unreal.ExponentialHeightFog,unreal.Vector(0,0,-400))
     fog.component.set_editor_property('fog_density',.006)

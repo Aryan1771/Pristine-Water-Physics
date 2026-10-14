@@ -24,7 +24,7 @@ $testLog = Join-Path $runReport 'Automation.log'
 if ($LASTEXITCODE -ne 0) { throw "Unreal automation process failed: $LASTEXITCODE. Inspect $testLog" }
 $report = Get-Content (Join-Path $runReport 'index.json') -Raw | ConvertFrom-Json
 $passed = [int]$report.succeeded + [int]$report.succeededWithWarnings
-if ($report.failed -gt 0 -or $report.notRun -gt 0 -or $passed -lt 12 -or @($report.tests | Where-Object { $_.state -ne 'Success' }).Count -gt 0) {
+if ($report.failed -gt 0 -or $report.notRun -gt 0 -or $passed -lt 13 -or @($report.tests | Where-Object { $_.state -ne 'Success' }).Count -gt 0) {
     throw "Automation incomplete/failed: passed=$passed, failed=$($report.failed), notRun=$($report.notRun). Inspect $runReport"
 }
 if ($report.succeededWithWarnings -gt 0) {

@@ -16,8 +16,11 @@ Pristine is a foundation for game and animation workflows. It is not yet a produ
 | Pristine Small Fluid | Small closed containers and liquid experiments | CPU weakly-compressible SPH, up to 1,000 particles, reconstructed surface; experimental. |
 | Pristine Water Source | Distant seas, oceans, ponds and inexpensive background water | Analytic waves and geometric ripples; not a volume-conserving ocean solver. |
 | Pristine Water Interactor | Buoyancy, drag and entry splashes on physics objects | Sphere approximation; no exact hull displacement or fully coupled momentum exchange. |
+| Pristine Water Character | Walk, wade, dive and swim through water regions | Local test controller, first/third person, optional MetaHuman visual and underwater attenuation. |
 
-Included: editable polygon boundaries, landscape collision baking, water-level tools, ray-visible procedural geometry, original water materials and demo map, Blueprint APIs, temperature-dependent freshwater properties, performance presets and twelve automated regression tests.
+Included: editable polygon boundaries, landscape collision baking, water-level tools, ray-visible procedural geometry, original water materials and demo map, Blueprint APIs, temperature-dependent freshwater properties, performance presets and thirteen automated regression tests.
+
+For the interactive nature scene, follow the [walking and swimming setup](docs/SWIMMING_TEST.md). This also explains water color, optical distance and optional MetaHuman integration. Add the [alpine lake setting](docs/ALPINE_LAKE.md) for rocky ridges, meadow banks and cloud reflections in the same map.
 
 ## Start here
 

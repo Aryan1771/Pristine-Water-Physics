@@ -5,7 +5,7 @@ Use UE 5.7 and a project with the plugin installed. Keep runtime code in Pristin
 Before submitting changes:
 
 1. Run `scripts/Test-Repository.ps1` for repository/asset/link checks.
-2. Run `scripts/Test-Unreal.ps1` against a local test project containing the edited plugin. This builds Development Editor and executes the twelve PristineWater tests with NullRHI.
+2. Run `scripts/Test-Unreal.ps1` against a local test project containing the edited plugin. This builds Development Editor and executes the thirteen PristineWater tests with NullRHI.
 3. Build the Development game target when runtime dependencies or code change. Run a cooked smoke test before claiming packaged-game support.
 4. Add meaningful conservation, bounds or numerical-state regressions for solver changes. Avoid timing thresholds in automated tests; use reproducible benchmarks separately.
 5. For rendering changes, capture and inspect the actual supported renderer. NullRHI tests cannot certify materials or visuals.

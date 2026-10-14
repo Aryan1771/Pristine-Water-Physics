@@ -15,7 +15,7 @@ This is an editable teaching scene, not a claim of photographic vegetation or a 
 3. Choose **Tools > Execute Python Script** and select `Plugins/PristineWaterPhysics/Tools/CreateNatureComparison.py`.
 4. The generator builds and saves `/Game/PristineNature/L_WaterComparison`. It preserves an existing map. Initial generation and serialization can take several minutes.
 5. Open that map in the Content Browser. In the Outliner, expand **Cameras - right click and Pilot**. Right-click a camera and choose **Pilot** to compare its view. Stop piloting before flying to another position.
-6. Press **Play** to run the water. With the default game mode, use the default flying pawn. Alternatively use **Simulate**, select a water actor and inspect live solver measurements.
+6. For walking, puddle interaction, diving and swimming, run `Tools/UpgradeNatureInteractions.py` and follow the [character setup and controls](SWIMMING_TEST.md). Press **Play**. Without that upgrade, the map uses the default flying pawn. Use **Simulate** to inspect live solver measurements.
 
 For a separate variation, change `ROOT` near the top of the generator before running it. To change the terrain shapes, edit `BODIES` and the `height()` function in a new variation. The generated terrain is collision-enabled mesh geometry, not a sculptable Unreal Landscape actor. You can replace it with a Landscape and rebake using the same region tools.
 
