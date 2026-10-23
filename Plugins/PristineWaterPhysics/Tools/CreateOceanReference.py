@@ -60,4 +60,3 @@ if not any(isinstance(a,unreal.PristineWaterSource) for a in actors.get_all_leve
 for a in actors.get_all_level_actors():
     if a.get_actor_label()=='Ocean reference camera':editor.set_level_viewport_camera_info(a.get_actor_location(),a.get_actor_rotation())
 unreal.log('PRISTINE_OCEAN_REFERENCE_READY')
-
