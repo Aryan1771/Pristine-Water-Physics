@@ -33,3 +33,13 @@ No multi-platform qualification, cooked Shipping launch, multiplayer replication
 - The alpine extension was generated and rendered in the same map. It adds original procedural geometry and references the engine's bundled cloud material. It retains the existing lake solver and bathymetry. The lake photograph supplies art direction; the scene is not a scan or an exact landscape reconstruction.
 - The host project enables ray tracing and hardware Lumen. No new whole-scene FPS benchmark is claimed; cloud rendering, the MetaHuman and the terrain add GPU costs beyond the solver. MetaHuman source assets are not distributed in this repository.
 The final DX12 five-station Play run on 15 October completed with `PRISTINE_PLAY_VALIDATION_SUCCESS`. The lake case reported swimming and underwater state; the shore case reported neither; the 4 cm puddle case recorded a splash instance without swimming; all five cases retained the assembled MetaHuman. Ray tracing and hardware Lumen both reported enabled. The subsequent terrain-only correction buries the cropped mountain boundary into the retained ground, removing exposed back faces beside the smaller comparison stations.
+
+## Surface detail update — 24 October 2026
+
+The material generator regenerated the directional normal tile and the five surface masters successfully. DX12 captures were inspected at all four comparison scales and in a separate ocean look-development map. The appearance upgrade checked that each Region retained its water volume: approximately 0.083947, 10.848042, 567.299764 and 25759.911606 cubic metres.
+
+Single Layer Water now supplies liquid color through absorption/scattering instead of diffuse base tint. Three moving normal scales are used above Low; derivative-based roughness moderates normal aliasing. Ocean geometry and its normals fade where the stretched mesh cannot sample its shortest analytic wave at four to eight vertices per wavelength. That distant visual filtering does not change gameplay height queries.
+
+See the [surface realism workflow](../../docs/SURFACE_REALISM.md) for actual captures, settings and regeneration steps. This update improves surface detail and horizon stability; it does not establish photographic equivalence, resolve breaking waves or certify a whole-scene frame rate.
+
+Both HostProjectEditor and HostProject Win64 Development targets built successfully after the surface update. All 13 automation tests passed in report `20261024-001856-316`. Repository asset/link checks and Python syntax checks passed. No new whole-scene FPS benchmark was run.

@@ -91,4 +91,8 @@ struct FPristineWaterMotion
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Motion")
     FVector2D FlowDirection = FVector2D(1.0f, 0.0f);
+
+    // World-space repetition length for the broad normal layer; finer bands follow it.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Motion", meta=(ClampMin="10", ClampMax="10000", Units="cm"))
+    float SurfaceDetailScaleCm = 500;
 };

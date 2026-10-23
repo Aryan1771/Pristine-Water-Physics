@@ -22,6 +22,8 @@ Included: editable polygon boundaries, landscape collision baking, water-level t
 
 For the interactive nature scene, follow the [walking and swimming setup](docs/SWIMMING_TEST.md). This also explains water color, optical distance and optional MetaHuman integration. Add the [alpine lake setting](docs/ALPINE_LAKE.md) for rocky ridges, meadow banks and cloud reflections in the same map.
 
+For scale-aware wave detail and the ocean reference map, follow the [surface realism workflow](docs/SURFACE_REALISM.md).
+
 ## Start here
 
 1. Install **Unreal Engine 5.7** and its Windows C++ development toolchain. The tested engine build is 5.7.4; rebuild for your own engine installation.

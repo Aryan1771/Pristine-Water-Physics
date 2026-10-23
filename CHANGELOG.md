@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added three-scale directional normal detail, region detail-scale controls, derivative-based reflection antialiasing and filtered distant ocean wave geometry.
+- Removed diffuse liquid tint from Single Layer Water tiers and added ocean reference / comparison appearance scripts with a surface realism guide.
+
 - Added an optional alpine lake extension inspired by a user-supplied reference, with original terrain, shore rocks, meadow vegetation, snow patches and a comparison camera.
 
 - Added a walking/wading/swimming test character, region-aware immersion, puddle/wake impulses, first/third-person camera and optional MetaHuman visual/animation slots.

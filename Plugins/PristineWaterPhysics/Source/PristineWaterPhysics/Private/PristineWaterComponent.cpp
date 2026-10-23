@@ -81,6 +81,7 @@ void UPristineWaterComponent::ApplyWaterSettings()
     SetScalar(TEXT("WaveFrequency"), Motion.WaveFrequency);
     SetScalar(TEXT("WaveSpeed"), Motion.WaveSpeed);
     SetScalar(TEXT("RippleStrength"), Motion.RippleStrength);
+    SetScalar(TEXT("NormalTiling"), FMath::Clamp(Motion.SurfaceDetailScaleCm,10.f,10000.f));
     SetScalar(TEXT("FlowDirectionX"), Motion.FlowDirection.X);
     SetScalar(TEXT("FlowDirectionY"), Motion.FlowDirection.Y);
     SetVector(TEXT("FlowDirection"), FLinearColor(Motion.FlowDirection.X, Motion.FlowDirection.Y, 0.0f, 0.0f));

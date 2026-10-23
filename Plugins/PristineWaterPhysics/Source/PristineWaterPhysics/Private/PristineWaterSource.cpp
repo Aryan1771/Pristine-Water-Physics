@@ -171,11 +171,28 @@ void APristineWaterSource::UpdateWaveGeometry()
     if(RestVertices.IsEmpty()) return;
     TArray<FVector> Vertices=RestVertices,Normals; TArray<FProcMeshTangent> Tangents;
     Normals.Reserve(Vertices.Num()); Tangents.Reserve(Vertices.Num());
-    for(FVector& P:Vertices)
+    const int32 Side=FMath::RoundToInt(FMath::Sqrt(double(Vertices.Num())));
+    const double ShortestWave=Water->Motion.WaveFrequency>0 ? 1000.0/(Water->Motion.WaveFrequency*1.73) : DBL_MAX;
+    for(int32 I=0;I<Vertices.Num();++I)
     {
+        FVector& P=Vertices[I];
         const auto S=SampleWater(GetActorTransform().TransformPosition(P));
-        P.Z=S.SurfaceZ-GetActorLocation().Z;
-        Normals.Add(GetActorTransform().InverseTransformVectorNoScale(S.Normal));
+        // The stretched ocean grid cannot resolve short waves near its perimeter.
+        // Fade their displacement and shading slopes together before undersampling.
+        double Spacing=0;
+        if(BodyType==EPristineWaterBody::Ocean)
+        {
+            const int32 X=I%Side,Y=I/Side;
+            if(X>0) Spacing=FMath::Max(Spacing,FVector::Dist(RestVertices[I],RestVertices[I-1]));
+            if(X+1<Side) Spacing=FMath::Max(Spacing,FVector::Dist(RestVertices[I],RestVertices[I+1]));
+            if(Y>0) Spacing=FMath::Max(Spacing,FVector::Dist(RestVertices[I],RestVertices[I-Side]));
+            if(Y+1<Side) Spacing=FMath::Max(Spacing,FVector::Dist(RestVertices[I],RestVertices[I+Side]));
+        }
+        const double Coverage=FMath::Clamp((ShortestWave/FMath::Max(1.0,Spacing)-4.0)/4.0,0.0,1.0);
+        const double Weight=Coverage*Coverage*(3.0-2.0*Coverage);
+        P.Z=(S.SurfaceZ-GetActorLocation().Z)*Weight;
+        const FVector LocalNormal=GetActorTransform().InverseTransformVectorNoScale(S.Normal);
+        Normals.Add(FMath::Lerp(FVector::UpVector,LocalNormal,Weight).GetSafeNormal());
         const FVector Normal=Normals.Last(); Tangents.Add(FProcMeshTangent(FVector(Normal.Z,0,-Normal.X).GetSafeNormal(),false));
     }
     Surface->UpdateMeshSection_LinearColor(0,Vertices,Normals,SurfaceUV,TArray<FLinearColor>(),Tangents);
